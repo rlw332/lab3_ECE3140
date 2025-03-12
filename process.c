@@ -3,6 +3,7 @@
  *
  *  Created on: Mar 6, 2025
  *      Author: timothyli
+ *      Reviser and Tester: rlw332
  */
 
 
@@ -14,7 +15,9 @@
 
 int process_create(void (*f)(void), int n) {
 	process_t *temp = (process_t *)malloc(sizeof(process_t));
-	if(temp == NULL) return -1;
+	if(temp == NULL){
+		return -1;
+	}
 	temp -> sp = process_stack_init(f, n);
 	if(temp -> sp == NULL) {
 		free(temp);
@@ -22,7 +25,7 @@ int process_create(void (*f)(void), int n) {
 	}
 
 	temp -> next = NULL;
-	enqueue(temp,process_queue);
+	enqueue(temp, &process_queue);
 	return 0;
 }
 
@@ -48,13 +51,13 @@ unsigned int * process_select(unsigned int * cursp) {
 			free(current_process_p);
 		} else {
 			current_process_p -> sp = cursp;
-			enqueue(current_process_p, process_queue);
+			enqueue(current_process_p, &process_queue);
 		}
 	}
 
-	if(is_empty(process_queue)) {
+	if(is_empty(&process_queue)) {
 		return NULL;
 	}
-	current_process_p = dequeue(process_queue);
+	current_process_p = dequeue(&process_queue);
 	return current_process_p -> sp;
 }
