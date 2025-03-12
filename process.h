@@ -19,6 +19,7 @@
 struct process_state{
 	//
 	//YOU NEED TO PUT OTHER DATA HERE
+	unsigned int *sp;
 	//
 	struct process_state * next; // keep this definition for en/de-queue
 };
