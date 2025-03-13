@@ -42,6 +42,7 @@ void process_start (void) {
 
     PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TEN_MASK; //start timer
 
+    current_process_p = NULL;
     process_begin();
 }
 
@@ -56,13 +57,8 @@ unsigned int * process_select(unsigned int * cursp) {
 		}
 	}
 
-	if(is_empty(&process_queue)) {
-	    if(cursp != NULL) { // If the current process is still running, keep running it 
-		    //(this catches cases when there is only one process remaining, so our previous enqueue does nothing)
-	        return current_process_p->sp;
-	    } else {
-	        return NULL;  // Only exit if there's no process running at all.
-	    }
+	if(is_empty(&process_queue)) { // if there are no processes left to run, return null to indicate end
+		return NULL; 
 	}
 	current_process_p = dequeue(&process_queue); // get next process to run
 	return current_process_p -> sp; //return the stack pointer of this next process
