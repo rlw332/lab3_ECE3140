@@ -57,7 +57,8 @@ unsigned int * process_select(unsigned int * cursp) {
 	}
 
 	if(is_empty(&process_queue)) {
-	    if(cursp != NULL) { // If the current process is still running, keep running it (this catches cases when current_process_p is set as null)
+	    if(cursp != NULL) { // If the current process is still running, keep running it 
+		    //(this catches cases when there is only one process remaining, so our previous enqueue does nothing)
 	        return current_process_p->sp;
 	    } else {
 	        return NULL;  // Only exit if there's no process running at all.
