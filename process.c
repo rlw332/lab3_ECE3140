@@ -47,23 +47,22 @@ void process_start (void) {
 
 unsigned int * process_select(unsigned int * cursp) {
 	if(current_process_p != NULL) {
-		if(cursp == NULL) {
+		if(cursp == NULL) { // means current process is done
 			process_stack_free(current_process_p -> sp, current_process_p -> n);
 			free(current_process_p);
 		} else {
-			current_process_p -> sp = cursp;
-			enqueue(current_process_p, &process_queue);
+			current_process_p -> sp = cursp; // update stack pointer with cursp
+			enqueue(current_process_p, &process_queue); // put current process at end of queue
 		}
 	}
 
 	if(is_empty(&process_queue)) {
-	    // If the current process is still running, keep running it
-	    if(cursp != NULL) {
+	    if(cursp != NULL) { // If the current process is still running, keep running it (this catches cases when current_process_p is set as null)
 	        return current_process_p->sp;
 	    } else {
 	        return NULL;  // Only exit if there's no process running at all.
 	    }
 	}
-	current_process_p = dequeue(&process_queue);
-	return current_process_p -> sp;
+	current_process_p = dequeue(&process_queue); // get next process to run
+	return current_process_p -> sp; //return the stack pointer of this next process
 }
