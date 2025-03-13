@@ -25,7 +25,7 @@ int main (void){
  process_start ();
 
  /*
-After process_start p1 should run. The process p1 is with the red LED.
+After process_start p1 should run. The process p1 is with the red LED (should blink on 10 times, off 10 times).
 */
 
  return 0;
