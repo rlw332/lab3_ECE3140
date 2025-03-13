@@ -1,11 +1,16 @@
+//This test case is original and is testing if the board can handle many running processes across both boards
+//Two of the processes are finite and will be removed from the queue after their execution
+//This test case has all procedures from both test_1.c and test_2.c into one file 
+
 #include "3140_concur.h"
 #include "led.h"
 
+//Finite processes from test_1.c
 void p1 (void)
 {
 	int i;
-	for (i=0; i < 15; i++) {
-		delay(100);
+	for (i=0; i < 15; i++) {  //Odd number should leave the red LED on when finished
+		delay(100);    //Made delay shorter as there were many running processes all at once (and was pretty slow with 500 as delay)
     	red_toggle_frdm();
 	}
 }
@@ -13,13 +18,14 @@ void p1 (void)
 void p2 (void)
 {
 	int i;
-	for (i=0; i < 10; i++) {
-		delay(100);
+	for (i=0; i < 10; i++) {  //Even number should toggle the green LED off when finished
+		delay(100);     //Made delay shorter as there were many running processes all at once (and was pretty slow with 500 as delay)
     	green_toggle_frdm();
 
 	}
 }
 
+//Ininite processes from test_2.c (changed names to p3-p5)
 volatile grb32_t val1 = {0,0,0,0};
 volatile grb32_t val2 = {0,0,0,0};
 
@@ -38,7 +44,7 @@ void p3 (void){
 				up=1;
 			}
 		}
-		delay(4);
+		delay(4); //Reduced delay
 	}
 }
 
@@ -60,7 +66,7 @@ void p4 (void){
 				up=1;
 			}
 		}
-		delay(3); //Different delay from p1
+		delay(3); //Reduced delay
 	}
 }
 
@@ -71,12 +77,12 @@ void p5 (void){
 		set_led(val2);
 		__enable_irq(); //enable interrupts again so that other
 						//processes get a chance to run
-		delay(2);
+		delay(2); //Reduced delay
 	}
 }
 
 
-int main (void){
+int main (void){     //All processes now under main()
 	led_init();
 
 	set15MHz();
@@ -105,13 +111,11 @@ int main (void){
 
  process_start ();
 
- //We thought memory might be the issue so we changed 32 -> 64, but nothing different happened
-
  /*
-After process_start p1 and p2 should be running concurrently.
-Both LEDs should blink. The process with the red LED should
-finish first, and after that the green LED should blink a few
-more times, but twice as fast. Why?
+After process_start p1 - p5 should be running concurrently.
+Both LEDs on the LED board and the FRDM board should behave as they did in the two provided test cases.
+The green FRDM led process should finish first (turning off), and the the red FRDM led process (should remain on). 
+The processes p3 - p5 should continuously execute after p1 and p2 finish.
 */
 
  return 0;
