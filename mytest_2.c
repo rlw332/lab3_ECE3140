@@ -1,61 +1,118 @@
 #include "3140_concur.h"
-#include <stdlib.h>
-#include <MKL46Z4.h>
-#include "process.h"
+#include "led.h"
 
-
-int process_create(void (*f)(void), int n) {
-	process_t *temp = (process_t *)malloc(sizeof(process_t));
-	if(temp == NULL){
-		return -1;
+void p1 (void)
+{
+	int i;
+	for (i=0; i < 15; i++) {
+		delay(100);
+    	red_toggle_frdm();
 	}
-	__disable_irq();
-	temp -> sp = process_stack_init(f, n);
-	__enable_irq();
-	temp -> n = n;
-	if(temp -> sp == NULL) {
-		free(temp);
-		return -1;
-	}
-
-	temp -> next = NULL;
-	enqueue(temp, &process_queue);
-	return 0;
 }
 
-void process_start (void) {
-    //same as part 3
-    SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
-    PIT->MCR = 0x00;
-    PIT->CHANNEL[0].LDVAL = 150000;
+void p2 (void)
+{
+	int i;
+	for (i=0; i < 10; i++) {
+		delay(100);
+    	green_toggle_frdm();
 
-    PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TIE_MASK; // enable interrupts
-    NVIC_EnableIRQ(PIT_IRQn); // enable PIT interrupt
-
-    PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TEN_MASK; //start timer
-
-    process_begin();
+	}
 }
 
-unsigned int * process_select(unsigned int * cursp) {
-	if(current_process_p != NULL) {
-		if(cursp == NULL) {
-			process_stack_free(current_process_p -> sp, current_process_p -> n);
-			free(current_process_p);
-		} else {
-			current_process_p -> sp = cursp;
-			enqueue(current_process_p, &process_queue);
+volatile grb32_t val1 = {0,0,0,0};
+volatile grb32_t val2 = {0,0,0,0};
+
+
+void p3 (void){
+	int up=1;
+	while(1){
+		if(up){
+			val1.red += 2;
+			if(val1.red > 200){
+				up=0;
+			}
+		}else{
+			val1.red -= 2;
+			if(val1.red < 10){
+				up=1;
+			}
 		}
+		delay(4);
 	}
+}
 
-	if(is_empty(&process_queue)) {
-	    // If the current process is still running, keep running it
-	    if(cursp != NULL) {
-	        return current_process_p->sp;
-	    } else {
-	        return NULL;  // Only exit if there's no process running at all.
-	    }
+void p4 (void){
+	int up=1;
+	while(1){
+		if(up){
+			val2.green += 1;
+			val2.red += 1;
+
+			if(val2.green > 100){
+				up=0;
+			}
+		}else{
+			val2.green -= 1;
+			val2.red -= 1;
+
+			if(val2.green < 10){
+				up=1;
+			}
+		}
+		delay(3); //Different delay from p1
 	}
-	current_process_p = dequeue(&process_queue);
-	return current_process_p -> sp;
+}
+
+void p5 (void){
+	while(1){
+		__disable_irq(); //globally disable interrupts
+		set_led(val1);
+		set_led(val2);
+		__enable_irq(); //enable interrupts again so that other
+						//processes get a chance to run
+		delay(2);
+	}
+}
+
+
+int main (void){
+	led_init();
+
+	set15MHz();
+
+ if (process_create (p1,32) < 0) {
+	return -1;
+ }
+
+ if (process_create (p2,32) < 0) {
+ 	return -1;
+ }
+
+
+ if (process_create (p3,32) < 0) {
+ 	return -1;
+ }
+
+ if (process_create (p4,32) < 0) {
+ 	return -1;
+ }
+
+ if (process_create (p5,32) < 0) {
+  	return -1;
+  }
+
+
+ process_start ();
+
+ //We thought memory might be the issue so we changed 32 -> 64, but nothing different happened
+
+ /*
+After process_start p1 and p2 should be running concurrently.
+Both LEDs should blink. The process with the red LED should
+finish first, and after that the green LED should blink a few
+more times, but twice as fast. Why?
+*/
+
+ return 0;
 }
