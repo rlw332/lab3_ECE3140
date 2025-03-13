@@ -21,6 +21,7 @@ int process_create(void (*f)(void), int n) {
 	__disable_irq(); // process_stack_init only works when disable interrupts, this line is meaningless when interrupts are not set up
 	temp -> sp = process_stack_init(f, n); // initialize process stack, set our temp stack pointer as this initial value
 	__enable_irq();
+	temp -> start = temp -> sp;
 	temp -> n = n; // save n for later when need to free process_stack
 	if(temp -> sp == NULL) { // other case when things fail
 		free(temp);
@@ -49,7 +50,7 @@ void process_start (void) {
 unsigned int * process_select(unsigned int * cursp) {
 	if(current_process_p != NULL) {
 		if(cursp == NULL) { // means current process is done
-			process_stack_free(current_process_p -> sp, current_process_p -> n);
+			process_stack_free(current_process_p -> start, current_process_p -> n);
 			free(current_process_p);
 		} else {
 			current_process_p -> sp = cursp; // update stack pointer with cursp
