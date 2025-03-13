@@ -18,7 +18,10 @@ int process_create(void (*f)(void), int n) {
 	if(temp == NULL){
 		return -1;
 	}
+	__disable_irq();
 	temp -> sp = process_stack_init(f, n);
+	__enable_irq();
+	temp -> n = n;
 	if(temp -> sp == NULL) {
 		free(temp);
 		return -1;
@@ -30,8 +33,6 @@ int process_create(void (*f)(void), int n) {
 }
 
 void process_start (void) {
-    set15MHz();
-
     //same as part 3
     SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
     PIT->MCR = 0x00;
@@ -48,6 +49,7 @@ void process_start (void) {
 unsigned int * process_select(unsigned int * cursp) {
 	if(current_process_p != NULL) {
 		if(cursp == NULL) {
+			process_stack_free(current_process_p -> sp, current_process_p -> n);
 			free(current_process_p);
 		} else {
 			current_process_p -> sp = cursp;
@@ -56,7 +58,12 @@ unsigned int * process_select(unsigned int * cursp) {
 	}
 
 	if(is_empty(&process_queue)) {
-		return NULL;
+	    // If the current process is still running, keep running it
+	    if(cursp != NULL) {
+	        return current_process_p->sp;
+	    } else {
+	        return NULL;  // Only exit if there's no process running at all.
+	    }
 	}
 	current_process_p = dequeue(&process_queue);
 	return current_process_p -> sp;
