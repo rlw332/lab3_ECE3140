@@ -17,7 +17,7 @@
 #define PROCESS_H_
 
 struct process_state{
-	//
+	//Save the stack pointer (*sp), the starting stack pointer (*start)
 	unsigned int *sp;
 	unsigned int * start;
 	int n;
