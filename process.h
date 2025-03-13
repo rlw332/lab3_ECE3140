@@ -19,7 +19,7 @@
 struct process_state{
 	//
 	unsigned int *sp;
-	unsigned int * original;
+	unsigned int * start;
 	int n;
 	//
 	struct process_state * next; // keep this definition for en/de-queue
