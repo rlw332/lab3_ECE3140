@@ -26,10 +26,8 @@ int main (void){
  process_start ();
 
  /*
-After process_start p1 and p2 should be running concurrently.
-Both LEDs should blink. The process with the red LED should
-finish first, and after that the green LED should blink a few
-more times, but twice as fast. Why?
+After process_start p1 should run. The process p1 is with the red LED should
+finish first.
 */
 
  return 0;
