@@ -1,3 +1,6 @@
+//This test case is non-original and is just testing the "one process" example given on the handout
+//This file is exactly the same as test_1.c, but without all the code for the p2 process
+
 #include "3140_concur.h"
 #include "led.h"
 
